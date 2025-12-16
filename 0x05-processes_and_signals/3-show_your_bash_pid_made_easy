@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# List PID and process name for processes whose name contains "bash"
+
+for d in /proc/[0-9]*; do
+  pid=${d##*/}
+
+  # read the short process name (comm), fallback to first argv if comm missing
+  if name=$(cat "$d/comm" 2>/dev/null); then
+    :
+  elif name=$(tr '\0' ' ' <"$d/cmdline" 2>/dev/null | awk '{print $1}'); then
+    :
+  else
+    continue
+  fi
+
+  # match processes whose name contains "bash"
+  case "$name" in
+    *bash*)
+      printf '%s %s\n' "$pid" "$name"
+      ;;
+  esac
+done
